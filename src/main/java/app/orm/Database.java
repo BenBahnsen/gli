@@ -4,19 +4,22 @@ import exceptions.NoConnectionException;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 public class Database {
   private static final Database db = new Database();
   final private List<Ticket> tickets = new ArrayList<>();
   final private List<Table> tables = new ArrayList<>();
   final private List<Tag> tags = new ArrayList<>();
-  private String adress;
   private String user;
+  private String url = "jdbc:sqlite:mydatabase.db";
 
   private Database() {
   }
 
-  public void initialize(String adress, String user) {
-    this.adress = adress;
+  private void initialize(Connection connection) throws SQLException {
     this.user = user;
     try {
       this.synchronize();
@@ -29,8 +32,17 @@ public class Database {
     return db;
   }
 
-  private boolean connect() {
-    // this.tickets.add(null);
+  public static boolean connect() {
+   try (Connection connection = DriverManager.getConnection(this.url)) {
+            if (connection != null) {
+                System.out.println("Connected to the database");
+
+                // Initialize the database schema if needed
+                initialize(connection);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error connecting to the database: " + e.getMessage());
+        }
     return true;
   }
 
